@@ -1,0 +1,58 @@
+---
+- name: Install & Configure CLI Tools
+  hosts: all
+  become: no
+  vars_files:
+    - variables.yml
+  tasks:
+    - name: Create Brewfile
+      copy:
+        content: |
+          brew "zsh"
+          brew "awscli"
+          brew "gh"
+          brew "tldr"
+          brew "bat"
+          brew "just"
+          brew "yq"
+          brew "aria2"
+          brew "mycli"
+          brew "zoxide"
+          brew "direnv"
+        dest: "{{ ansible_env.HOME }}/Brewfile"
+
+    - name: Configure Some Rational Git Defaults
+      shell: |
+        git config --global user.name "{{ git_user_name}}"
+        git config --global user.email "{{ git_user_email }}"
+        git config --global push.autoSetupRemote true
+        git config --global pull.rebase false
+        git config --global pull.ff true
+        git config --global merge.ff true
+        git config --global core.autocrlf true
+
+    - name: Source DirEnv in ZSH
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        line: 'source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"'
+        create: yes
+
+    - name: Empty AWS CLI Pager
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - AWS CLI Variables"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        block: |
+          # AWS CLI Variables
+          export AWS_PAGER=""
+          export AWS_REGION="us-east-2"
+          export AWS_PROFILE="default"
+
+    - name: Add Zoxide to Shell
+      lineinfile:
+        path: "{{ lookup('env', 'HOME') }}/.zprofile"
+        line: 'eval "$(zoxide init zsh)"'
+        create: yes
+
+    - name: Brew Bundle Install
+      shell: brew bundle --file={{ ansible_env.HOME }}/Brewfile
+      become: no

@@ -1,0 +1,34 @@
+---
+- name: Install and Configure ASDF Version Manager
+  hosts: all
+  become: no
+  tasks:
+    - name: Check if ASDF is already installed
+      stat:
+        path: "/home/linuxbrew/.linuxbrew/opt/asdf/libexec/asdf.sh"
+      register: asdf_installed
+
+    - name: Brew Install ASDF
+      shell: brew install asdf
+      when: not asdf_installed.stat.exists
+
+    - name: Ensure ASDF is configured in ZSH
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        line: '. /home/linuxbrew/.linuxbrew/opt/asdf/libexec/asdf.sh'
+        create: yes
+        state: present
+
+    - name: Ensure ASDF is added to PATH in ZSH
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        line: 'fpath=(${ASDF_DIR}/completions $fpath)'
+        create: yes
+        state: present
+
+    - name: Ensure ASDF is added to autoload in ZSH
+      lineinfile:
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        line: 'autoload -Uz compinit && compinit'
+        create: yes
+        state: present

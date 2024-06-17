@@ -1,0 +1,104 @@
+---
+- name: Install Zsh Aliases & Functions
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Docker Aliases
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - Docker Aliases"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        create: yes
+        block: |
+          alias down='docker-compose down --remove-orphans'
+          alias up='docker-compose up -d'
+
+    - name: Utility Aliases
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - Utility Aliases"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        create: yes
+        block: |
+          alias tf='terraform'
+          alias ovs='cd ~/code/docker/overseerr && down && up && cd ~/code'
+          alias ls='lsd -al'
+
+    - name: Install ap() Helper Function
+      blockinfile:
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - ap Function"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        create: yes
+        block: |
+          {% raw %}
+          function ap() {
+            local aws_config="$HOME/.aws/config"
+            local profiles=( $(awk -F ' ' '/\[profile / {sub(/\[profile /, ""); sub(/\]/, ""); print $0}' $aws_config | grep -v default) )
+            local choice
+            local login=0
+          
+            for arg in "$@"; do
+              case "$arg" in
+                --login|-l)
+                  login=1
+                  ;;
+                --help|-h)
+                  echo "Usage: ap [option] [profile]"
+                  echo "  Options:"
+                  echo "    -l, --login  Log in using AWS SSO after setting the profile."
+                  echo "    -h, --help   Show this help message."
+                  echo "  Profile:"
+                  echo "    Specify a profile number or name to set the AWS_PROFILE environment variable."
+                  echo "    If no profile is specified, a list of available profiles will be displayed for selection."
+                  echo ""
+                  echo "To set up your ~/.aws/config file, ensure each profile is prefixed with '[profile name]'."
+                  echo "Exclude the 'default' profile to manage profiles explicitly."
+                  return 0
+                  ;;
+                *[!0-9]*)
+                  if [[ " ${profiles[@]} " =~ " $arg " ]]; then
+                    choice=$arg
+                    else
+                    echo "Invalid profile name: $arg"
+                    return 1
+                    fi
+                  ;;
+                *)
+                  if (( arg > 0 && arg <= ${#profiles[@]} )); then
+                    choice=${profiles[$arg]}  # Correcting to zero-based index
+                  else
+                    echo "Invalid profile number: $arg"
+                    return 1
+                  fi
+                  ;;
+              esac
+            done
+          
+            if [[ -z "$choice" ]]; then
+              # Display profile list if no valid choice or name has been provided
+              echo "Available AWS Profiles:"
+              local i=1
+              for profile in "${profiles[@]}"; do
+                printf "\033[36m%3d) %s\033[0m\n" $i $profile
+                ((i++))
+              done
+            
+              while true; do
+                echo -n "Select a profile number: "
+                read choice
+                if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice > 0 && choice <= ${#profiles[@]} )); then
+                   choice=${profiles[$choice]}  # Correcting to zero-based index
+                   break
+                else
+                  echo "\033[31mPlease enter a valid number.\033[0m"
+                fi
+              done
+            fi
+          
+            export AWS_PROFILE="$choice"
+            echo "AWS_PROFILE set to \033[32m$AWS_PROFILE\033[0m"
+          
+            if (( login == 1 )); then
+              echo "Initiating AWS SSO login..."
+              aws sso login
+            fi
+          }
+          {% endraw %}

@@ -1,0 +1,19 @@
+---
+- name: Install & Configure Golang
+  hosts: all
+  become: no
+  tasks:
+    - name: Check if Golang is installed
+      command: go version
+      register: golang_check
+      ignore_errors: yes
+
+    - name: Install Golang
+      shell: |
+        asdf plugin add golang https://github.com/asdf-community/asdf-golang.git
+        asdf install golang latest
+        asdf global golang latest
+
+    - name: Check if Golang is installed
+      command: go version
+      register: golang_check_2

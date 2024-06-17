@@ -1,0 +1,14 @@
+- name: Build Docker image for Laravel setup
+  hosts: all
+  tasks:
+    - name: Build the Docker image
+      shell: docker buildx build -f config/Laravel.Setup.Dockerfile -t laravel-setup:latest .
+    - name: Install Laravel Aliases
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - Laravel Aliases"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        block: |
+          alias sail='bash vendor/bin/sail'
+          alias artisan='sail artisan'
+          alias tinker='artisan tinker'
+          alias composer='sail composer'

@@ -1,0 +1,15 @@
+---
+- name: Install & Configure Serverless Framework & Plugins
+  hosts: all
+  tasks:
+    - name: Check if Serverless Framework is installed
+      command: sls --version
+      register: sls_check
+      ignore_errors: yes
+
+    - name: Install Serverless Framework
+      shell: npm install -g serverless
+      become: no
+      when: sls_check.failed
+
+    # Add plugins here as they're installed and used.

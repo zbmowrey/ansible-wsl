@@ -1,0 +1,29 @@
+---
+- name: Install & Configure Python
+  hosts: all
+  tasks:
+    - name: Check if Python is installed
+      command: python --version
+      register: python_check
+      ignore_errors: yes
+
+    - name: Install Python
+      shell: |
+        asdf plugin add python
+        asdf install python latest
+        asdf global python latest
+      become: yes
+      when: python_check.failed
+
+    - name: Check if Python is installed
+      command: python --version
+      register: python_check_2
+
+    - name: Python Aliases
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - Python Aliases"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        block: |
+          alias pvc='python -m venv venv'
+          alias pva='. venv/bin/activate'
+          alias pvd='deactivate'

@@ -1,0 +1,28 @@
+#
+---
+- name: Step 1 - Update & Configure APT Package Manager, Install Linux Homebrew, Install ZSH & Set as Default Shell
+  hosts: all
+
+- import_playbook: install-apt-update.yml
+- import_playbook: install-wsl.yml
+- import_playbook: install-homebrew.yml
+- import_playbook: install-cli-tools.yml
+- import_playbook: install-zsh.yml
+- import_playbook: install-asdf.yml
+- import_playbook: install-bun.yml
+- import_playbook: install-golang.yml
+- import_playbook: install-laravel.yml
+- import_playbook: install-nodejs.yml
+- import_playbook: install-python.yml
+- import_playbook: install-rust.yml
+- import_playbook: install-serverless.yml
+- import_playbook: install-terraform.yml
+- import_playbook: install-zsh-aliases.yml
+- import_playbook: update-brew-packages.yml
+
+- name: Notify User to Restart Shell
+  hosts: all
+  tasks:
+    - name: Notify User to Restart Shell
+      debug:
+        msg: "Restart your shell (or exec it) to apply changes, then 'just finish' to complete the setup."

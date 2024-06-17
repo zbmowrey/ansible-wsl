@@ -1,0 +1,21 @@
+---
+- name: Install & Configure Bun
+  hosts: all
+  become: no
+  tasks:
+    - name: Check if Bun is installed
+      command: bun --version
+      register: bun_check
+      ignore_errors: yes
+
+    - name: Install Bun
+      shell: |
+        asdf plugin add bun https://github.com/cometkim/asdf-bun.git
+        asdf install bun latest
+        asdf global bun latest
+      become: yes
+      when: bun_check.failed
+
+    - name: Check if Bun is installed
+      command: bun --version
+      register: bun_check_2

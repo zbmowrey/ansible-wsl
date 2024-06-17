@@ -1,0 +1,20 @@
+---
+- name: Install & Configure Node.js
+  hosts: all
+  tasks:
+    - name: Check if Node.js is installed
+      command: node --version
+      register: node_check
+      ignore_errors: yes
+
+    - name: Install Node.js
+      shell: |
+        asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+        asdf install nodejs latest
+        asdf global nodejs latest
+      become: yes
+      when: node_check.failed
+
+    - name: Check if Node.js is installed
+      command: node --version
+      register: node_check_2

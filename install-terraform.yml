@@ -1,0 +1,63 @@
+---
+- name: Install & Configure Terraform & Related Tools
+  hosts: all
+  tasks:
+    - name: Check if Terraform is installed
+      command: terraform --version
+      register: terraform_check
+      ignore_errors: yes
+
+    - name: Install Terraform
+      shell: |
+        asdf plugin add terraform
+        asdf install terraform latest
+        asdf global terraform latest
+      when: terraform_check.failed
+
+    - name: Check if InfraCost is installed
+      command: infracost --version
+      register: infracost_check
+      ignore_errors: yes
+
+    - name: Install InfraCost
+      shell: |
+        asdf plugin add infracost https://github.com/dex4er/asdf-infracost.git
+        asdf install infracost latest
+        asdf global infracost latest
+      when: infracost_check.failed
+
+    - name: Check if TerraScan is installed
+      command: terrascan version
+      register: terrascan_check
+      ignore_errors: yes
+
+    - name: Install TerraScan
+      shell: |
+        asdf plugin add terrascan https://github.com/hpdobrica/asdf-terrascan.git
+        asdf install terrascan latest
+        asdf global terrascan latest
+      when: terrascan_check.failed
+
+    - name: Check if TF Summarize is installed
+      command: tf-summarize -v
+      register: tf_summarize_check
+      ignore_errors: yes
+
+    - name: Install TF Summarize
+      shell: |
+        asdf plugin add tf-summarize https://github.com/dineshba/tf-summarize.git
+        asdf install tf-summarize latest
+        asdf global tf-summarize latest
+      when: tf_summarize_check.failed
+
+    - name: Check if Checkov is installed
+      command: checkov --version
+      register: checkov_check
+      ignore_errors: yes
+
+    - name: Install Checkov
+      shell: |
+        asdf plugin add checkov https://github.com/bosmak/asdf-checkov.git
+        asdf install checkov latest
+        asdf global checkov latest
+      when: checkov_check.failed

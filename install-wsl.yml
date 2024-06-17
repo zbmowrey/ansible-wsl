@@ -1,0 +1,22 @@
+---
+- name: Install WSL Specific Utilities and Environment Variables
+  hosts: all
+  gather_facts: yes
+  gather_subset:
+    - "!all"
+    - "min"
+  # - "hardware"
+  tasks:
+    - name: Install WSLU
+      when: ansible_kernel is search("WSL")
+      apt:
+        name: wslu
+        state: present
+
+    - name: Add Browser Environment Variable
+      when: ansible_kernel is search("WSL")
+      blockinfile:
+        marker: "\n# {mark} ANSIBLE MANAGED BLOCK - Browser for wslu (aws sso login)"
+        path: "{{ ansible_env.HOME }}/.zprofile"
+        block: |
+          export BROWSER="/mnt/c/Program\ Files/Mozilla\ Firefox/firefox.exe"

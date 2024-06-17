@@ -1,0 +1,9 @@
+---
+- name: Update Brew Packages
+  hosts: all
+  tasks:
+    - name: Brew Update
+      command: brew update
+
+    - name: Brew Upgrade
+      command: brew upgrade --force

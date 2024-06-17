@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  gather_subset:
+    - "!all"
+    - "min"
+  # - "hardware"
+
+  tasks:
+
+    - name: Gather and display kernel version
+      debug:
+        msg: "{{ ansible_kernel }}"
+
+    - name: Check if the kernel contains a specific string
+      debug:
+        msg: "Kernel contains the string"
+      when: ansible_kernel is search("WSL")
+
+    - name: Gather facts
+      ansible.builtin.setup:
+
+    - name: Display Python interpreter
+      debug:
+        msg: "Ansible is using the Python interpreter at {{ ansible_facts.python.executable }}"

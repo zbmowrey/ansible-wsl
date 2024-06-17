@@ -1,0 +1,14 @@
+---
+- name: Update APT Repositories
+  hosts: all
+  become: yes
+  tasks:
+    - name: Apt Update
+      apt:
+        autoclean: yes
+        autoremove: yes
+        install_recommends: yes
+        update_cache: yes
+        cache_valid_time: 3600
+        update_cache_retries: 2
+        update_cache_retry_max_delay: 300
